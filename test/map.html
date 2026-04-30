@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktywne Obszary z Ludzikami</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+            font-family: sans-serif;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        svg {
+            /* filter: drop-shadow(0px 8px 20px rgba(0,0,0,0.15)); */ /* Cień może przeszkadzać ludzikom */
+            cursor: pointer;
+        }
+
+        /* Styl dla ścieżek (te tła, które się podświetlają) */
+        .obszar-tlo {
+            fill: white;
+            stroke: #333;
+            stroke-width: 2px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: all; /* Bardzo ważne, żeby wykrywać najechanie na całą grupę */
+        }
+
+        /* Styl dla grup ludzików (chowamy je na start) */
+        .ludzik-grupa {
+            opacity: 0;
+            pointer-events: none; /* Żeby ludziki nie zasłaniały obszaru */
+        }
+
+        /* Styl dla dymka */
+        .dymek {
+            fill: #ffd166; /* Jasno żółty kolor dymka */
+            stroke: #333;
+            stroke-width: 1px;
+            opacity: 0; /* Ukryty na start */
+            pointer-events: none;
+        }
+
+        /* Styl dla tekstu w dymku */
+        .dymek-tekst {
+            font-size: 24px;
+            font-weight: bold;
+            fill: #333;
+            text-anchor: middle; /* Centrowanie tekstu w dymku */
+            opacity: 0; /* Ukryty na start */
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Najedź na obszar, aby zobaczyć ludzika!</h1>
+        
+        <svg viewBox="0 0 1000 600" width="800" height="480">
+            
+            <g class="obszar-grupa" id="grupa-1">
+                <path class="obszar-tlo" d="M386,95 Q598,73 787,97 Q884,196 893,421 Q737,429 704,413 L713,365 Q666,220 386,95 Z" />
+                
+                <image class="ludzik-grupa" x="550" y="200" width="100" height="100" href="twoj-ludzik.png" />
+                
+                <g class="dymek-kontener">
+                    <rect class="dymek" x="530" y="120" width="140" height="60" rx="10" />
+                    <text class="dymek-tekst" x="600" y="160">Cześć!</text>
+                </g>
+            </g>
+
+            <g class="obszar-grupa" id="grupa-2">
+                <path class="obszar-tlo" d="M109,271 Q221,351 278,382 Q233,485 102,593 L36,442 L109,271 Z" />
+                <image class="ludzik-grupa" x="120" y="400" width="100" height="100" href="twoj-ludzik.png" />
+                <g class="dymek-kontener">
+                    <rect class="dymek" x="100" y="320" width="140" height="60" rx="10" />
+                    <text class="dymek-tekst" x="170" y="360">Opis 2</text>
+                </g>
+            </g>
+
+            <g class="obszar-grupa" id="grupa-3">
+                <path class="obszar-tlo" d="M139,268 L283,383 Q370,425 487,486 Q479,531 329,598 Q242,525 283,383 Q228,349 139,268 Z" />
+                <image class="ludzik-grupa" x="320" y="480" width="100" height="100" href="twoj-ludzik.png" />
+                <g class="dymek-kontener">
+                    <rect class="dymek" x="300" y="400" width="140" height="60" rx="10" />
+                    <text class="dymek-tekst" x="370" y="440">Opis 3</text>
+                </g>
+            </g>
+
+            <g class="obszar-grupa" id="grupa-4">
+                <path class="obszar-tlo" d="M336,597 Q454,449 617,351 Q713,365 704,413 Q692,492 696,569 L487,597 Q411,597 336,597 Z" />
+                <image class="ludzik-grupa" x="500" y="480" width="100" height="100" href="twoj-ludzik.png" />
+                <g class="dymek-kontener">
+                    <rect class="dymek" x="480" y="400" width="140" height="60" rx="10" />
+                    <text class="dymek-tekst" x="550" y="440">Opis 4</text>
+                </g>
+            </g>
+
+            <g class="obszar-grupa" id="grupa-5">
+                <path class="obszar-tlo" d="M704,413 Q737,429 893,421 Q903,482 895,543 Q736,571 696,569 Q692,492 704,413 Z" />
+                <image class="ludzik-grupa" x="780" y="460" width="100" height="100" href="twoj-ludzik.png" />
+                <g class="dymek-kontener">
+                    <rect class="dymek" x="760" y="380" width="140" height="60" rx="10" />
+                    <text class="dymek-tekst" x="830" y="420">Opis 5</text>
+                </g>
+            </g>
+            
+        </svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <script>
+        // Pobieramy grupy obszarów (one teraz wykrywają myszkę)
+        const grupyObszarow = document.querySelectorAll('.obszar-grupa');
+
+        grupyObszarow.forEach(grupa => {
+            
+            // Reakcja na najechanie myszką na GRUPĘ
+            grupa.addEventListener('mouseenter', () => {
+                const tlo = grupa.querySelector('.obszar-tlo');
+                const ludzik = grupa.querySelector('.ludzik-grupa');
+                const dymek = grupa.querySelector('.dymek');
+                const tekst = grupa.querySelector('.dymek-tekst');
+
+                // 1. Płynne podświetlenie tła
+                gsap.to(tlo, {
+                    fill: "#007bff", // Zaświeć na niebiesko
+                    duration: 0.3,
+                    ease: "power2.out",
+                    transformOrigin: "50% 50%" 
+                });
+
+                // 2. Płynne pojawienie się ludzika
+                gsap.to(ludzik, {
+                    opacity: 1, // Pokaż ludzika
+                    scale: 1,  // Ewentualnie dodaj efekt powiększenia
+                    duration: 0.4,
+                    delay: 0.1, // Małe opóźnienie, żeby najpierw tło się zaświeciło
+                    ease: "back.out(1.7)" // "Sprężysty" efekt pojawienia
+                });
+
+                // 3. Płynne pojawienie się dymka
+                gsap.to([dymek, tekst], {
+                    opacity: 1, // Pokaż dymek i tekst
+                    scale: 1,
+                    y: -5, // Lekkie uniesienie
+                    duration: 0.4,
+                    delay: 0.3, // Pojawia się po ludziku
+                    ease: "power2.out"
+                });
+            });
+
+            // Reakcja na zjechanie myszką z GRUPY
+            grupa.addEventListener('mouseleave', () => {
+                const tlo = grupa.querySelector('.obszar-tlo');
+                const ludzik = grupa.querySelector('.ludzik-grupa');
+                const dymek = grupa.querySelector('.dymek');
+                const tekst = grupa.querySelector('.dymek-tekst');
+
+                // 1. Powrót tła do bieli
+                gsap.to(tlo, {
+                    fill: "#ffffff", // Powrót do bieli
+                    duration: 0.6,
+                    ease: "power2.inOut"
+                });
+
+                // 2. Schowanie ludzika
+                gsap.to(ludzik, {
+                    opacity: 0, // Schowaj ludzika
+                    duration: 0.3,
+                    ease: "power2.in"
+                });
+
+                // 3. Schowanie dymka
+                gsap.to([dymek, tekst], {
+                    opacity: 0, // Schowaj dymek i tekst
+                    y: 0, // Powrót pozycji
+                    duration: 0.3,
+                    ease: "power2.in"
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
